@@ -1,0 +1,116 @@
+---
+- hosts: keystone_all[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the keystone policy file
+      fetch:
+        src: /etc/keystone/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}keystone_policy.json"
+      when: keystone_policy_overrides is defined
+
+- hosts: nova_api_os_compute[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the nova policy file
+      fetch:
+        src: /etc/nova/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}nova_policy.json"
+      when: nova_policy_overrides is defined
+
+- hosts: cinder_api[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the cinder policy file
+      fetch:
+        src: /etc/cinder/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}cinder_policy.json"
+      when: cinder_policy_overrides is defined
+
+- hosts: glance_api[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the glance policy file
+      fetch:
+        src: /etc/glance/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}glance_policy.json"
+      when: glance_policy_overrides is defined
+
+- hosts: heat_api[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the heat policy file
+      fetch:
+        src: /etc/heat/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}heat_policy.json"
+      when: heat_policy_overrides is defined
+
+- hosts: neutron_server[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the neutron policy file
+      fetch:
+        src: /etc/neutron/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}neutron_policy.json"
+      when: neutron_policy_overrides is defined
+
+- hosts: ceilometer_api[0]
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Fetching the ceilometer policy file
+      fetch:
+        src: /etc/ceilometer/policy.json
+        dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}ceilometer_policy.json"
+      when: ceilometer_policy_overrides is defined
+
+- name: Uploading policy to horizon
+  hosts: horizon_all
+  vars_files:
+    - vars/policy-files-variables.yml
+  tasks:
+    - name: Creating horizon config folder
+      file:
+        path: "/etc/horizon/conf/"
+        state: directory
+        mode: "0755"
+      when: policy_override_exists| bool
+    - name: Uploading policy files
+      copy:
+        src: "{{item}}"
+        dest: "/etc/horizon/conf/{{item}}"
+      when: policy_override_exists| bool
+      with_fileglob:
+        - "{{ policy_download_folder }}/*.json"
+    - name: Editing the policy folder of horizon
+      lineinfile:
+        dest: /etc/horizon/local_settings.py
+        regexp: "^POLICY_FILES_PATH ="
+        line: "POLICY_FILES_PATH = '/etc/horizon/conf/'"
+      when: policy_override_exists| bool
+    - name: Setting the policy files for horizon
+      lineinfile:
+        dest: /etc/horizon/local_settings.py
+        regexp: "^POLICY_FILES ="
+        line: >
+          POLICY_FILES = { {% if keystone_policy_overrides is defined %} 'identity': 'keystone_policy.json',{% endif %}
+          {% if nova_policy_overrides is defined %} 'compute': 'nova_policy.json',{% endif %}
+          {% if cinder_policy_overrides is defined %} 'volume': 'cinder_policy.json',{% endif %}
+          {% if glance_policy_overrides is defined %} 'image': 'glance_policy.json',{% endif %}
+          {% if heat_policy_overrides is defined %} 'orchestration': 'heat_policy.json',{% endif %}
+          {% if neutron_policy_overrides is defined %} 'network': 'neutron_policy.json',{% endif %}
+          {% if ceilometer_policy_overrides is defined %} 'telemetry': 'ceilometer_policy.json',{% endif %}
+          }
+      when: policy_override_exists| bool
+      notify:
+        - restart apache
+  handlers:
+    - name: restart apache
+      service:
+        name: apache2
+        state: restarted

@@ -1,0 +1,3 @@
+---
+policy_override_exists: "{% if nova_policy_overrides is defined or cinder_policy_overrides is defined or glance_policy_overrides is defined or neutron_policy_overrides is defined or keystone_policy_overrides is defined or heat_policy_overrides is defined or ceilometer_policy_overrides is defined %}True{% else %}False{% endif %}"
+policy_download_folder: "/etc/openstack_deploy/"
