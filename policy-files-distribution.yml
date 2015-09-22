@@ -7,6 +7,7 @@
       fetch:
         src: /etc/keystone/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}keystone_policy.json"
+        flat: yes
       when: keystone_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: nova_api_os_compute[0]
@@ -17,6 +18,7 @@
       fetch:
         src: /etc/nova/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}nova_policy.json"
+        flat: yes
       when: nova_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: cinder_api[0]
@@ -27,6 +29,7 @@
       fetch:
         src: /etc/cinder/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}cinder_policy.json"
+        flat: yes
       when: cinder_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: glance_api[0]
@@ -37,6 +40,7 @@
       fetch:
         src: /etc/glance/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}glance_policy.json"
+        flat: yes
       when: glance_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: heat_api[0]
@@ -47,6 +51,7 @@
       fetch:
         src: /etc/heat/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}heat_policy.json"
+        flat: yes
       when: heat_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: neutron_server[0]
@@ -57,6 +62,7 @@
       fetch:
         src: /etc/neutron/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}neutron_policy.json"
+        flat: yes
       when: neutron_policy_overrides is defined and policy_files_always_redownload | bool
 
 - hosts: ceilometer_api[0]
@@ -67,6 +73,7 @@
       fetch:
         src: /etc/ceilometer/policy.json
         dest: "{{ policy_download_folder | default('/etc/openstack_deploy/') }}ceilometer_policy.json"
+        flat: yes
       when: ceilometer_policy_overrides is defined and policy_files_always_redownload | bool
 
 - name: Uploading policy to horizon
