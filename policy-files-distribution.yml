@@ -90,7 +90,7 @@
     - name: Uploading policy files
       copy:
         src: "{{item}}"
-        dest: "/etc/horizon/conf/{{item}}"
+        dest: "/etc/horizon/conf/"
       when: policy_override_exists| bool
       with_fileglob:
         - "{{ policy_download_folder }}/*.json"
